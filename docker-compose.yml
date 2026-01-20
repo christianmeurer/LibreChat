@@ -5,7 +5,10 @@ services:
   api:
     container_name: LibreChat
     ports:
-      - "${PORT}:${PORT}"
+      # Bind to a specific interface for safer remote access.
+      # - Default: 0.0.0.0 (all interfaces)
+      # - Recommended for LAN-only: set BIND_IP to your LAN IP in [`.env`](.env:1)
+      - "${BIND_IP:-0.0.0.0}:${PORT}:${PORT}"
     depends_on:
       - mongodb
       - rag_api
