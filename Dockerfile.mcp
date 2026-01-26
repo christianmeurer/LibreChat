@@ -1,0 +1,39 @@
+# LibreChat MCP image:
+# - git: required for the MCP exec tool allowlist.
+# - system Chromium + deps/fonts: required for @modelcontextprotocol/server-puppeteer.
+# - optional: preinstall official MCP servers (pinned) to avoid runtime `npx` downloads.
+
+FROM ghcr.io/danny-avila/librechat:latest
+
+USER root
+
+RUN apk add --no-cache \
+      git \
+      chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ttf-freefont \
+      ca-certificates \
+    && update-ca-certificates \
+    && if [ -x /usr/bin/chromium-browser ] && [ ! -x /usr/bin/chromium ]; then ln -sf /usr/bin/chromium-browser /usr/bin/chromium; fi \
+    && if [ -x /usr/bin/chromium ] && [ ! -x /usr/bin/chromium-browser ]; then ln -sf /usr/bin/chromium /usr/bin/chromium-browser; fi \
+    && chromium-browser --version \
+    && git --version
+
+ENV PUPPETEER_SKIP_DOWNLOAD=1 \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Puppeteer inside containers commonly needs: --no-sandbox --disable-setuid-sandbox
+
+ENV MCP_SERVERS_DIR=/opt/mcp-servers \
+    PATH=/opt/mcp-servers/bin:${PATH}
+
+RUN mkdir -p "${MCP_SERVERS_DIR}" \
+    && npm install --global --prefix "${MCP_SERVERS_DIR}" --omit=dev --no-audit --no-fund \
+        @modelcontextprotocol/server-filesystem@2026.1.14 \
+        @modelcontextprotocol/server-puppeteer@2025.5.12 \
+        @modelcontextprotocol/server-sequential-thinking@2025.12.18 \
+    && npm cache clean --force
+
+USER node

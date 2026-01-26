@@ -1,0 +1,10 @@
+{
+  "name": "@librechat/custom-mcp-servers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "self-check": "node ./self-check/run-all.mjs",
+    "test": "node --test ./tests/exec-server.test.mjs ./tests/fetch-server.test.mjs"
+  }
+}
+
